@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <limits>
+#include <set>
 #include "Graph.h" 
 using namespace std;
 
@@ -50,9 +51,10 @@ vector<string> obtenerProductosUnicos(Graph<string>& grafo) {
 }
 
 int main() {
-   
+
     vector<Transaccion> datos;
-    
+    set<string> productos_unicos;
+
     ifstream archivo("transacciones.txt");
     if (!archivo.is_open()) {
         cerr << "Error: No se pudo abrir el archivo transacciones.txt" << endl;
@@ -100,6 +102,7 @@ int main() {
         }
 
         datos.push_back({id, producto, cantidad, precio});
+        productos_unicos.insert(producto);
     }
     archivo.close();
 
@@ -108,19 +111,24 @@ int main() {
         return 1;
     }
 
-    vector<vector<string>> compras_por_transaccion; 
+    vector<vector<string>> compras_por_transaccion;
     vector<string> transaccion_actual;  //es como la bolsa
-    
+    set<string> productos_en_transaccion;
+
     int id_actual = datos[0].id;
 
-    for (int i = 0; i < datos.size(); i++) {  //agrupa los productos segun el id
-        if (datos[i].id == id_actual) {
-            transaccion_actual.push_back(datos[i].producto);
-        } else {
-            compras_por_transaccion.push_back(transaccion_actual);  //guarda la bolsa en el vector bidimensional
+    for (size_t i = 0; i < datos.size(); i++) {  //agrupa los productos segun el id
+        if (datos[i].id != id_actual) {
+            if (!transaccion_actual.empty()) {
+                compras_por_transaccion.push_back(transaccion_actual);  //guarda la bolsa en el vector bidimensional
+            }
             transaccion_actual.clear();
+            productos_en_transaccion.clear();
             id_actual = datos[i].id;
-            transaccion_actual.push_back(datos[i].producto); //agrega el producto que nos hizo saltar al else
+        }
+
+        if (productos_en_transaccion.insert(datos[i].producto).second) {
+            transaccion_actual.push_back(datos[i].producto);
         }
     }
     if (!transaccion_actual.empty()) {			//mete la ultima bolsa si quedo algo en el "carrito"
@@ -140,8 +148,12 @@ int main() {
 
 
     Graph<string> grafo_compras;
-    
-    for (int i = 0; i < lista_coOcurrente.size(); i++) {
+
+    for (const auto& producto : productos_unicos) {
+        grafo_compras.addVertex(producto);
+    }
+
+    for (size_t i = 0; i < lista_coOcurrente.size(); i++) {
         string p1 = lista_coOcurrente[i].p1;
         string p2 = lista_coOcurrente[i].p2;
         int peso = lista_coOcurrente[i].peso;

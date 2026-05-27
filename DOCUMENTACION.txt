@@ -1,0 +1,109 @@
+DOCUMENTACIÓN OFICIAL DEL REPOSITORIO LAB9
+=========================================
+
+1) PROPÓSITO GENERAL
+Este repositorio implementa un análisis de co‑ocurrencia de productos a partir
+de transacciones de compra. El objetivo es construir un grafo no dirigido
+ponderado donde los productos son nodos y las relaciones (aristas) reflejan
+cuántas veces dos productos aparecen juntos en una misma transacción. El
+programa permite explorar el grafo con un menú interactivo en consola.
+
+2) ESTRUCTURA DEL REPOSITORIO
+Raíz del proyecto:
+ - main.cpp        : Programa principal y lógica de análisis.
+ - Graph.h/.cpp    : Implementación de estructuras de grafo (Edge, Vertex, Graph).
+ - List.h/.cpp     : Implementación de lista enlazada usada por el grafo.
+ - PDFinstructivos.pdf : Documento con instrucciones (referencia externa).
+ - main, main.build, programa : Archivos binarios/artefactos de compilación.
+
+3) BIBLIOTECAS (INCLUDES) Y MOTIVO DE USO
+main.cpp:
+ - <iostream>  : Entrada/salida en consola (menú, mensajes).
+ - <string>    : Manejo de texto (productos, parsing).
+ - <vector>    : Arreglos dinámicos para transacciones y resultados.
+ - <algorithm> : Ordenamientos y swap.
+ - <fstream>   : Lectura del archivo de transacciones.
+ - <limits>    : Limpieza segura del buffer de entrada.
+ - <set>       : Colección de productos únicos sin duplicados.
+ - "Graph.h"   : Estructuras de grafo propias del repositorio.
+
+Graph.h:
+ - <iostream>  : Sobrecarga de operadores de impresión de nodos/aristas.
+ - "List.cpp"  : Incluye definiciones de la lista enlazada (templates).
+
+List.h:
+ - <iostream>  : Mensajes de error básicos en operaciones de lista.
+ - <cassert>   : Soporte para validaciones (aunque no se usa activamente).
+
+List.cpp:
+ - <stdexcept> : Excepciones estándar para errores de rango.
+
+4) COMPONENTES PRINCIPALES (CLASES Y ESTRUCTURAS)
+4.1) List<T> (List.h / List.cpp)
+Lista enlazada simple usada para almacenar vértices y aristas.
+Métodos principales:
+ - insert(pos, value): inserta un nodo en la posición indicada.
+ - erase(pos): elimina el nodo en la posición indicada.
+ - get(pos): obtiene el elemento en la posición, con validación.
+ - print(): imprime todos los elementos en orden.
+ - size(): devuelve el tamaño de la lista.
+ - search(value): busca un nodo por valor.
+
+4.2) Edge<T> (Graph.h)
+Representa una arista desde un vértice hacia otro con peso.
+ - to: puntero al vértice destino.
+ - weight: peso de la relación (frecuencia de co‑ocurrencia).
+
+4.3) Vertex<T> (Graph.h / Graph.cpp)
+Representa un nodo del grafo.
+ - data: valor del vértice (producto).
+ - inDegree / outDegree: grados de entrada y salida.
+ - connectedTo: lista de aristas salientes.
+Métodos:
+ - addNeighbor(to, weight): crea arista hacia otro vértice y actualiza grados.
+ - getWeight(value): obtiene el peso de la arista hacia un vértice específico.
+
+4.4) Graph<T> (Graph.h / Graph.cpp)
+Contenedor de vértices y operaciones de grafo.
+ - vertexList: lista de vértices.
+ - count: número de vértices.
+Métodos:
+ - addVertex(value): crea y añade un vértice.
+ - getVertex(value): busca y retorna un vértice por valor.
+ - addEdge(from, to, weight): crea arista entre dos vértices (creándolos si no existen).
+
+4.5) Estructuras auxiliares en main.cpp
+ - Transaccion: id, producto, cantidad, precio.
+ - Parejas: p1, p2, peso (conteo de co‑ocurrencias).
+
+5) FUNCIONES PRINCIPALES EN main.cpp
+ - coOcurrencia(lista_pares, prod1, prod2):
+   Normaliza el orden de la pareja y aumenta su peso si existe; si no, la crea.
+ - obtenerProductosUnicos(grafo):
+   Recorre los vértices del grafo y devuelve una lista ordenada de productos.
+
+6) FLUJO GENERAL DEL PROGRAMA
+1. Lee transacciones desde "transacciones.txt" (formato: id,producto,cantidad,precio).
+2. Valida formato y tipos; descarta líneas inválidas.
+3. Agrupa productos por ID de transacción (un “carrito” por compra).
+4. Genera combinaciones de productos en cada carrito y calcula co‑ocurrencias.
+5. Construye un grafo con:
+   - Un vértice por cada producto único.
+   - Aristas ponderadas por frecuencia de co‑ocurrencia.
+6. Presenta un menú interactivo para:
+   - Listar productos disponibles.
+   - Mostrar el grafo y relaciones.
+   - Mostrar productos con mayor frecuencia (grado).
+   - Consultar productos relacionados con uno específico.
+
+7) ENTRADAS Y SALIDAS
+Entrada:
+ - Archivo requerido: "transacciones.txt" en el mismo directorio de ejecución.
+ - Formato por línea: id,producto,cantidad,precio
+
+Salida:
+ - Resultados mostrados en consola mediante un menú interactivo.
+
+8) NOTAS DE COMPILACIÓN
+No hay scripts de build ni pruebas automatizadas dentro del repositorio.
+El proyecto es C++ y requiere un compilador compatible con C++17 o superior.

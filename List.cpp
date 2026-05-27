@@ -1,6 +1,7 @@
 #ifndef GRAPH_LIST_CPP
 #define GRAPH_LIST_CPP
 #include "List.h"
+#include <stdexcept>
 
 template<typename T>
 List<T>:: List(): begin(0), count(0){}
@@ -68,19 +69,17 @@ void List<T>::erase(int pos) {
 
 template<typename T>
 T& List<T>::get(int pos) const{
-	if(pos < 0 || pos>count-1){
-		cout << "Error! The position is out of range." << endl;
-		assert(false);
+	if(pos < 0 || pos >= count){
+		throw out_of_range("Error! The position is out of range.");
 	}
-	if(pos == 0){
-		return begin->data;
-	}else{
-		Node<T>* cur = begin;
-		for(int i=0; i<pos; i++){
-			cur = cur->next;
-		}
-		return cur->data;
+	Node<T>* cur = begin;
+	for(int i=0; i<pos; i++){
+		cur = cur->next;
 	}
+	if(!cur){
+		throw out_of_range("Error! The position is out of range.");
+	}
+	return cur->data;
 }
 
 template<typename T>

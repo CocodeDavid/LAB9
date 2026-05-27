@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <limits>
 #include "Graph.h" 
 using namespace std;
 
@@ -59,7 +60,9 @@ int main() {
     }
     
     string linea;
+    int linea_numero = 0;
     while (getline(archivo, linea)) {
+        linea_numero++;
         if (linea.empty()) continue;
         
         int id;
@@ -68,24 +71,42 @@ int main() {
         double precio;
         
         // Parsear la línea: id,producto,cantidad,precio
-        size_t pos = 0;
-        size_t coma = linea.find(',');
-        id = stoi(linea.substr(pos, coma - pos));
-        
-        pos = coma + 1;
-        coma = linea.find(',', pos);
-        producto = linea.substr(pos, coma - pos);
-        
-        pos = coma + 1;
-        coma = linea.find(',', pos);
-        cantidad = stoi(linea.substr(pos, coma - pos));
-        
-        pos = coma + 1;
-        precio = stod(linea.substr(pos));
-        
+        size_t primera_coma = linea.find(',');
+        size_t segunda_coma = (primera_coma == string::npos) ? string::npos : linea.find(',', primera_coma + 1);
+        size_t tercera_coma = (segunda_coma == string::npos) ? string::npos : linea.find(',', segunda_coma + 1);
+
+        if (primera_coma == string::npos || segunda_coma == string::npos || tercera_coma == string::npos) {
+            cerr << "Linea inválida (formato incorrecto) en la linea " << linea_numero << endl;
+            continue;
+        }
+
+        string id_str = linea.substr(0, primera_coma);
+        producto = linea.substr(primera_coma + 1, segunda_coma - primera_coma - 1);
+        string cantidad_str = linea.substr(segunda_coma + 1, tercera_coma - segunda_coma - 1);
+        string precio_str = linea.substr(tercera_coma + 1);
+
+        if (id_str.empty() || producto.empty() || cantidad_str.empty() || precio_str.empty()) {
+            cerr << "Linea inválida (campos vacíos) en la linea " << linea_numero << endl;
+            continue;
+        }
+
+        try {
+            id = stoi(id_str);
+            cantidad = stoi(cantidad_str);
+            precio = stod(precio_str);
+        } catch (const exception& e) {
+            cerr << "Linea inválida en la linea " << linea_numero << ": " << e.what() << endl;
+            continue;
+        }
+
         datos.push_back({id, producto, cantidad, precio});
     }
     archivo.close();
+
+    if (datos.empty()) {
+        cerr << "No se encontraron transacciones válidas en el archivo." << endl;
+        return 1;
+    }
 
     vector<vector<string>> compras_por_transaccion; 
     vector<string> transaccion_actual;  //es como la bolsa
@@ -142,8 +163,13 @@ int main() {
         cout << "5. Salir" << endl;
         cout << "========================================" << endl;
         cout << "Seleccione una opción: ";
-        cin >> opcion;
-        cin.ignore();
+        if (!(cin >> opcion)) {
+            cout << "\nEntrada inválida.\n" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         
         switch (opcion) {
             case 1: {
@@ -210,6 +236,12 @@ int main() {
                 cout << "________________________________________\n" << endl;
                 
                 vector<string> productos = obtenerProductosUnicos(grafo_compras);
+
+                if (productos.empty()) {
+                    cout << "No hay productos disponibles." << endl;
+                    cout << "\n________________________________________\n" << endl;
+                    break;
+                }
                 
                 cout << "Seleccione un producto:\n" << endl;
                 for (size_t i = 0; i < productos.size(); i++) {
@@ -218,8 +250,13 @@ int main() {
                 
                 cout << "\nIngrese el número del producto: ";
                 int opcionProducto;
-                cin >> opcionProducto;
-                cin.ignore();
+                if (!(cin >> opcionProducto)) {
+                    cout << "Entrada inválida." << endl;
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 
                 if (opcionProducto < 1 || opcionProducto > (int)productos.size()) {
                     cout << "Opción inválida." << endl;
